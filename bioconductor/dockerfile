@@ -1,2 +1,4 @@
 FROM bioconductor/tidyverse:3.21-r-4.5.1
 RUN R -e "BiocManager::install('Maaslin2')"
+COPY .Rprofile /home/rstudio/.Rprofile
+# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/maaslin2:1.22 .
