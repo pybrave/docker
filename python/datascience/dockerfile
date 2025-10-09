@@ -1,0 +1,4 @@
+FROM registry.cn-hangzhou.aliyuncs.com/wybioinfo/datascience-notebook:x86_64-ubuntu-22.04
+# RUN pip install statannotations
+RUN pip install matplotlib_venn
+# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/datascience-notebook:x86_64-ubuntu-22.04 .
