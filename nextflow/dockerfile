@@ -1,0 +1,22 @@
+FROM linuxserver/code-server:4.104.3 
+RUN apt-get update -y
+RUN apt-get install openjdk-17-jdk wget -y
+RUN apt-get clean -y
+ENV NXF_HOME=/.nextflow
+RUN curl -s https://get.nextflow.io | bash
+RUN mv nextflow /usr/local/bin/nextflow 
+RUN  chmod 755 /usr/local/bin/nextflow \
+ && nextflow info
+RUN chmod  -R  777 /.nextflow
+
+#  docker run --rm -it --entrypoint bash linuxserver/code-server:4.104.3  
+# docker build  -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-nextflow .
+
+# docker run --rm  -it \
+#   --name code-server \
+#     -p 8443:8443 \
+#     -e PUID=$(id -u) \
+#     -e PGID=$DOCKER_GID  \
+#     -v /usr/bin/docker:/usr/bin/docker \
+#     -v /var/run/docker.sock:/var/run/docker.sock \
+#     registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-nextflow

@@ -1,6 +1,8 @@
 FROM registry.cn-hangzhou.aliyuncs.com/wybioinfo/maaslin2:1.22
-RUN R -e "install.packages('circlize')"
-RUN R -e "BiocManager::install('ComplexHeatmap')"
+# RUN R -e "install.packages('circlize')"
+# RUN R -e "BiocManager::install('ComplexHeatmap')"
+RUN R -e "BiocManager::install('clusterProfiler')"
+RUN R -e "BiocManager::install('pathview')"
 
 # RUN R -e "install.packages('Hmisc')"
 
