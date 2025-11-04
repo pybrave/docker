@@ -3,8 +3,8 @@ name: Pull Metaphlan and Push to Aliyun ACR
 on:
   workflow_dispatch:  # 手动触发
 env:
-  IMAGE_NAME: fastp:latest
-  DOCKERHUB_REPO: staphb/fastp:latest
+  IMAGE_NAME: bowtie2:latest
+  DOCKERHUB_REPO: staphb/bowtie2:latest
 jobs:
   push:
     runs-on: ubuntu-latest
