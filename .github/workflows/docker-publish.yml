@@ -1,0 +1,31 @@
+name: Pull Metaphlan and Push to Aliyun ACR
+
+on:
+  workflow_dispatch:  # 手动触发
+env:
+  IMAGE_NAME: bowtie2:latest
+  DOCKERHUB_REPO: staphb/bowtie2:latest
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pull $DOCKERHUB_REPO/$IMAGE_NAME
+        run: |
+          docker pull $DOCKERHUB_REPO
+
+      - name: Tag image for Aliyun ACR
+        run: |
+          docker tag $DOCKERHUB_REPO registry.cn-hangzhou.aliyuncs.com/${{ secrets.ALIYUN_NAMESPACE }}/$IMAGE_NAME
+
+      - name: Login to Aliyun ACR
+        run: |
+          echo ${{ secrets.ALIYUN_PASSWORD }} | docker login \
+            --username=${{ secrets.ALIYUN_USERNAME }} \
+             registry.cn-hangzhou.aliyuncs.com --password-stdin
+
+      - name: Push to Aliyun ACR
+        run: |
+          docker push registry.cn-hangzhou.aliyuncs.com/${{ secrets.ALIYUN_NAMESPACE }}/$IMAGE_NAME
