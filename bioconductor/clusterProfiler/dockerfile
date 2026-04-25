@@ -1,0 +1,5 @@
+FROM bioconductor/tidyverse:latest
+COPY .Rprofile /home/rstudio/.Rprofile
+RUN mkdir -p /.local/share && chmod 777 /.local/share
+# RUN R -e "BiocManager::install('clusterProfiler')"
+# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/bioconductor-tidyverse:3.22 .
