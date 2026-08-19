@@ -1,0 +1,19 @@
+FROM registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto
+
+RUN mamba install -y -c conda-forge \
+		 r-base \
+		 r-irkernel \
+		 r-tidyverse \
+		 cmake \
+		 libuv \
+	&& R -e "IRkernel::installspec(user = FALSE)" \
+	&& mamba clean -afy
+
+RUN mkdir -p /config/data /config/extensions \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /config/data \
+		--extensions-dir /config/extensions \
+		--install-extension REditorSupport.r
+
+		
+# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto-r .
