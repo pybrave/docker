@@ -1,0 +1,61 @@
+FROM registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server:4.104.3
+
+RUN apt-get update \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+		bash \
+		ca-certificates \
+		wget \
+	&& rm -rf /var/lib/apt/lists/*
+
+ENV CONDA_DIR=/opt/conda
+ENV PATH=${CONDA_DIR}/bin:${PATH}
+
+RUN wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O /tmp/miniforge.sh \
+	&& bash /tmp/miniforge.sh -b -p ${CONDA_DIR} \
+	&& rm /tmp/miniforge.sh \
+	&& conda clean -afy \
+	# PUID/PGID at container start only renumbers the abc account, it doesn't chown existing files,
+	# so grant write access to "other" as well to keep conda usable under any future uid/gid.
+	&& chmod -R o+rwX ${CONDA_DIR}
+
+RUN wget -q https://github.com/quarto-dev/quarto-cli/releases/download/v1.10.18/quarto-1.10.18-linux-amd64.tar.gz \
+	&& tar -xzf quarto-1.10.18-linux-amd64.tar.gz -C /opt \
+	&& mv /opt/quarto-1.10.18 /opt/quarto \
+	&& ln -s /opt/quarto/bin/quarto /usr/local/bin/quarto \
+	&& rm quarto-1.10.18-linux-amd64.tar.gz
+
+RUN python -m pip install --no-cache-dir \
+		jupyter \
+		jupyterlab \
+		bash_kernel \
+	&& python -m bash_kernel.install --sys-prefix
+
+RUN mkdir -p /config/data /config/extensions \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /config/data \
+		--extensions-dir /config/extensions \
+		--install-extension quarto.quarto \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /config/data \
+		--extensions-dir /config/extensions \
+		--install-extension ms-toolsai.jupyter \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /config/data \
+		--extensions-dir /config/extensions \
+		--install-extension ms-python.python \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /config/data \
+		--extensions-dir /config/extensions \
+		--install-extension Anthropic.claude-code \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /config/data \
+		--extensions-dir /config/extensions \
+		--install-extension cweijan.vscode-office
+
+		
+			
+				
+
+
+		
+# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto .
