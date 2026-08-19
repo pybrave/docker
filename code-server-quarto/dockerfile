@@ -50,7 +50,12 @@ RUN mkdir -p /config/data /config/extensions \
 	&& /app/code-server/bin/code-server \
 		--user-data-dir /config/data \
 		--extensions-dir /config/extensions \
-		--install-extension cweijan.vscode-office
+		--install-extension cweijan.vscode-office \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /config/data \
+		--extensions-dir /config/extensions \
+		--install-extension Continue.continue
+
 
 		
 			
