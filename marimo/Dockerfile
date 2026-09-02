@@ -2,6 +2,7 @@ FROM lscr.io/linuxserver/baseimage-ubuntu:jammy
 
 ENV PUID=1000
 ENV PGID=1000
+ENV MARIMO_WORKSPACE=/workspace
 
 RUN apt-get update && \
     apt-get install -y python3 python3-pip python3-venv && \
@@ -11,6 +12,6 @@ RUN apt-get update && \
 COPY root/ /
 RUN chmod +x /etc/cont-init.d/10-workspace /etc/services.d/marimo/run
 
-WORKDIR /workspace
+WORKDIR ${MARIMO_WORKSPACE}
 
 EXPOSE 8080

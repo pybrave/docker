@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-mkdir -p /workspace
-chown abc:abc /workspace
+workspace="${MARIMO_WORKSPACE:-/workspace}"
+
+mkdir -p "$workspace"
+chown abc:abc "$workspace"

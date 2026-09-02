@@ -19,3 +19,14 @@ docker run --rm -p 1357:1357 marimo:local
 ```
 + The server is accessible via port 1357;
 + No password is required.
+
+By default, Marimo opens `/workspace`. Set `MARIMO_WORKSPACE` to use a different
+working directory; the directory is created and assigned to the container user
+when the container starts:
+
+```zsh
+docker run --rm -p 8080:8080 \
+	-e MARIMO_WORKSPACE=/data/notebooks \
+	-v "$PWD/notebooks:/data/notebooks" \
+	marimo:local
+```
