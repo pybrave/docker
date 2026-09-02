@@ -1,46 +1,16 @@
-# Base image
-FROM python:3.10.12
+FROM lscr.io/linuxserver/baseimage-ubuntu:jammy
 
-# Metadata
-LABEL org.opencontainers.image.authors="A. Mhamdi"
-LABEL version="latest"
+ENV PUID=1000
+ENV PGID=1000
 
-SHELL [ "/bin/bash", "-c" ]
-
-ENV NVM_DIR=/usr/local/nvm
-ENV NODE_VERSION=22
-
-# Create directory and install NVM
-RUN mkdir -p ${NVM_DIR}
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-
-ENV PATH=/usr/local/nvm/versions/node/v22.11.0/bin:$PATH
-ENV PATH=/marimo/.venv/bin:$PATH
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin
-
-WORKDIR /marimo
-COPY requirements.txt .
-RUN uv venv .venv
-RUN uv pip install pip --upgrade
-RUN uv pip install -r requirements.txt --upgrade
-WORKDIR /marimo/work
-COPY .marimo.toml .
-
-# Install gosu for user switching in entrypoint
-RUN set -eux; \
-    apt-get update; \
-    apt-get install -y gosu; \
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip python3-venv && \
+    pip3 install --no-cache-dir marimo && \
     rm -rf /var/lib/apt/lists/*
 
-# Expose 1357
-EXPOSE 1357
+COPY root/ /
+RUN chmod +x /etc/cont-init.d/10-workspace /etc/services.d/marimo/run
 
-# Entrypoint script to adjust container user via UID/GID env vars
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+WORKDIR /workspace
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# Default command
-CMD ["marimo", "edit", "--host", "0.0.0.0", "--port", "1357", "--headless", "--no-token"]
+EXPOSE 8080

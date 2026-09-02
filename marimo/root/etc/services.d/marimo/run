@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bash
+
+export HOME=/config
+exec s6-setuidgid abc marimo edit --host 0.0.0.0 --port 8080
