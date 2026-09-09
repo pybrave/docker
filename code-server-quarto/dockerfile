@@ -30,34 +30,44 @@ RUN python -m pip install --no-cache-dir \
 		bash_kernel \
 	&& python -m bash_kernel.install --sys-prefix
 
-RUN mkdir -p /config/data /config/extensions \
+# Install extensions outside of /config so linuxserver.io's startup chown of
+# /config doesn't crawl thousands of files on every boot (slow startup). The
+# --extensions-dir below stays baked into the image and is shared "other"-writable
+# to survive any PUID/PGID renumber at container start.
+ENV EXTENSIONS_DIR=/opt/code-server-extensions
+
+
+RUN mkdir -p /config/data ${EXTENSIONS_DIR} \
 	&& /app/code-server/bin/code-server \
-		--user-data-dir /config/data \
-		--extensions-dir /config/extensions \
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir ${EXTENSIONS_DIR} \
 		--install-extension quarto.quarto \
 	&& /app/code-server/bin/code-server \
-		--user-data-dir /config/data \
-		--extensions-dir /config/extensions \
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir ${EXTENSIONS_DIR} \
 		--install-extension ms-toolsai.jupyter \
 	&& /app/code-server/bin/code-server \
-		--user-data-dir /config/data \
-		--extensions-dir /config/extensions \
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir ${EXTENSIONS_DIR} \
 		--install-extension ms-python.python \
 	&& /app/code-server/bin/code-server \
-		--user-data-dir /config/data \
-		--extensions-dir /config/extensions \
-		--install-extension Anthropic.claude-code \
-	&& /app/code-server/bin/code-server \
-		--user-data-dir /config/data \
-		--extensions-dir /config/extensions \
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir ${EXTENSIONS_DIR} \
 		--install-extension cweijan.vscode-office \
 	&& /app/code-server/bin/code-server \
-		--user-data-dir /config/data \
-		--extensions-dir /config/extensions \
-		--install-extension Continue.continue
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir ${EXTENSIONS_DIR} \
+		--install-extension Continue.continue \
+	&& chmod -R o+rwX ${EXTENSIONS_DIR} \
+	&& rm -rf /tmp/code-server-data \
+	# The linuxserver base launches code-server with a hardcoded
+	# --extensions-dir /config/extensions. Symlink it to our baked-in dir so the
+	# extensions are found without living under /config (which the base's startup
+	# script recursively chowns on every boot — the cause of the slow startup).
+	&& ln -s ${EXTENSIONS_DIR} /config/extensions
+	
+COPY .bashrc /config/.bashrc
 
-
-		
 			
 				
 

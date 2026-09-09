@@ -1,19 +1,75 @@
 FROM registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto
 
-RUN mamba install -y -c conda-forge \
-		 r-base \
-		 r-irkernel \
-		 r-tidyverse \
-		 cmake \
-		 libuv \
-	&& R -e "IRkernel::installspec(user = FALSE)" \
-	&& mamba clean -afy
+# Build tools & system libraries required to compile R packages from CRAN source
+RUN apt-get update \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+		build-essential \
+		gfortran \
+		cmake \
+		pkg-config \
+		libcurl4-openssl-dev \
+		libssl-dev \
+		libxml2-dev \
+		libgit2-dev \
+		libfontconfig1-dev \
+		libfreetype6-dev \
+		libpng-dev \
+		libtiff5-dev \
+		libjpeg-dev \
+		libharfbuzz-dev \
+		libfribidi-dev \
+		libudunits2-dev \
+		libgdal-dev \
+		libgeos-dev \
+		libproj-dev \
+		liblapack-dev \
+		libblas-dev \
+		libicu-dev \
+		libbz2-dev \
+		liblzma-dev \
+		zlib1g-dev \
+		libuv1-dev \
+	&& rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /config/data /config/extensions \
+# Install R from the official CRAN (cloud.r-project.org) apt repository
+RUN apt-get update -qq \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+		software-properties-common \
+		dirmngr \
+		wget \
+		gnupg \
+		lsb-release \
+	&& wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \
+		| tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
+	&& add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
+	&& apt-get update -qq \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+		r-base \
+		r-base-dev \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN R -e 'install.packages(c("IRkernel"), repos = "https://cloud.r-project.org", Ncpus = 4)' \
+	&& R -e "IRkernel::installspec(user = FALSE)"
+
+# tidyverse meta-package is tiny but only compiles after all its dependencies are
+# built. It can be silently skipped/left installable when bundled with IRkernel in
+# a single install.packages() call, so re-install it explicitly (idempotent) to
+# guarantee `library(tidyverse)` works at runtime.
+RUN R -e 'install.packages("tidyverse", repos = "https://cloud.r-project.org", Ncpus = 4)'
+
+# Install into the same baked-in extensions dir as the base image (which
+# symlinks /config/extensions -> /opt/code-server-extensions), so the R extension
+# is found at runtime and stays out of /config (avoids slow startup chown).
+RUN mkdir -p /config/data /opt/code-server-extensions \
 	&& /app/code-server/bin/code-server \
-		--user-data-dir /config/data \
-		--extensions-dir /config/extensions \
-		--install-extension REditorSupport.r
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir /opt/code-server-extensions \
+		--install-extension REditorSupport.r \
+	&& chmod -R o+rwX /opt/code-server-extensions \
+	&& rm -rf /tmp/code-server-data
 
-		
+RUN R -e 'install.packages("httpgd", repos = "https://cloud.r-project.org", Ncpus = 4)'
+
+
 # docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto-r .
+
