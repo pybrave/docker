@@ -68,8 +68,21 @@ RUN mkdir -p /config/data /opt/code-server-extensions \
 	&& chmod -R o+rwX /opt/code-server-extensions \
 	&& rm -rf /tmp/code-server-data
 
+
+
 RUN R -e 'install.packages("httpgd", repos = "https://cloud.r-project.org", Ncpus = 4)'
 
 
+# Install the autocomplete extension from a .vsix release (biox-dev/autocomplete v0.1.1)
+RUN mkdir -p /opt/code-server-extensions \
+	&& wget -qO /tmp/autocomplete-0.1.1.vsix \
+		https://github.com/biox-dev/autocomplete/releases/download/v0.1.1/autocomplete-0.1.1.vsix \
+	&& /app/code-server/bin/code-server \
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir /opt/code-server-extensions \
+		--install-extension /tmp/autocomplete-0.1.1.vsix \
+	&& chmod -R o+rwX /opt/code-server-extensions \
+	&& rm -rf /tmp/code-server-data /tmp/autocomplete-0.1.1.vsix
+	
 # docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto-r .
 
