@@ -83,6 +83,15 @@ RUN mkdir -p /opt/code-server-extensions \
 		--install-extension /tmp/autocomplete-0.1.1.vsix \
 	&& chmod -R o+rwX /opt/code-server-extensions \
 	&& rm -rf /tmp/code-server-data /tmp/autocomplete-0.1.1.vsix
-	
+
+RUN apt-get update && apt-get install -y libgsl-dev \
+	&& rm -rf /var/lib/apt/lists/*
 # docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto-r .
 
+RUN cat >> /config/.bashrc <<'EOF'
+
+# BRAVE environment
+if [ -f /etc/profile.d/brave-env.sh ]; then
+    source /etc/profile.d/brave-env.sh
+fi
+EOF
