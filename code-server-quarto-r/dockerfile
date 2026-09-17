@@ -86,7 +86,7 @@ RUN mkdir -p /opt/code-server-extensions \
 
 RUN apt-get update && apt-get install -y libgsl-dev \
 	&& rm -rf /var/lib/apt/lists/*
-# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto-r .
+
 
 RUN cat >> /config/.bashrc <<'EOF'
 
@@ -95,3 +95,15 @@ if [ -f /etc/profile.d/brave-env.sh ]; then
     source /etc/profile.d/brave-env.sh
 fi
 EOF
+
+# Install the terminal-workspaces extension from a local .vsix (cybersader.terminal-workspaces v0.7.1)
+COPY cybersader.terminal-workspaces-0.7.1.vsix /tmp/cybersader.terminal-workspaces-0.7.1.vsix
+RUN /app/code-server/bin/code-server \
+		--user-data-dir /tmp/code-server-data \
+		--extensions-dir /opt/code-server-extensions \
+		--install-extension /tmp/cybersader.terminal-workspaces-0.7.1.vsix \
+	&& chmod -R o+rwX /opt/code-server-extensions \
+	&& rm -rf /tmp/code-server-data /tmp/cybersader.terminal-workspaces-0.7.1.vsix
+
+
+# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/code-server-quarto-r .
