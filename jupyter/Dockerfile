@@ -4,10 +4,15 @@ ENV PUID=1000
 ENV PGID=1000
 ENV JUPYTER_WORKSPACE=/workspace
 ENV JUPYTER_BASE_URL=/
+ENV SHELL=/bin/bash
+
+SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv && \
+    apt-get install -y python3 python3-pip python3-venv vim wget && \
     pip3 install --no-cache-dir jupyterlab && \
+    chsh -s /bin/bash root && \
+    usermod -s /bin/bash abc && \
     rm -rf /var/lib/apt/lists/*
 
 COPY root/ /

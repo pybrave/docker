@@ -1,6 +1,7 @@
 #!/usr/bin/with-contenv bash
 
 export HOME=/config
+export SHELL=/bin/bash
 workspace="${JUPYTER_WORKSPACE:-/workspace}"
 base_url="${JUPYTER_BASE_URL:-/}"
 

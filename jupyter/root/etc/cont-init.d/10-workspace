@@ -2,6 +2,9 @@
 
 workspace="${JUPYTER_WORKSPACE:-/workspace}"
 
+# 确保 abc 用户的默认 shell 是 bash（基础镜像默认为 /bin/false）
+usermod -s /bin/bash abc
+
 mkdir -p "$workspace"
 # chown abc:abc "$workspace"
 chown -R "${PUID}:${PGID}" "$workspace"
