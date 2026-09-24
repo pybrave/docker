@@ -20,6 +20,8 @@ RUN chmod +x /etc/cont-init.d/10-workspace /etc/services.d/jupyter/run
 
 WORKDIR ${JUPYTER_WORKSPACE}
 
+COPY .bashrc /config/.bashrc
+
 EXPOSE 8888
 
 # docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/gobrave-jupyter .
