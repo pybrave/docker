@@ -18,9 +18,13 @@ RUN apt-get update && \
 COPY root/ /
 RUN chmod +x /etc/cont-init.d/10-workspace /etc/services.d/jupyter/run
 
-WORKDIR ${JUPYTER_WORKSPACE}
+# Make the colourful prompt apply to *every* interactive shell, not just
+# `abc`'s login shell.  /etc/profile.d/*.sh covers login shells, and the
+# line appended to /etc/bash.bashrc covers interactive non-login shells
+# (e.g. `docker exec -it <container> bash`, the JupyterLab terminal).
+RUN printf '\n# Global colourful prompt (see /etc/profile.d/20-gobrave-prompt.sh)\n[ -n "$PS1" ] && . /etc/profile.d/20-gobrave-prompt.sh\n' >> /etc/bash.bashrc
 
-COPY .bashrc /config/.bashrc
+WORKDIR ${JUPYTER_WORKSPACE}
 
 EXPOSE 8888
 
