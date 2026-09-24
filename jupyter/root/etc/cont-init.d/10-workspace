@@ -3,4 +3,5 @@
 workspace="${JUPYTER_WORKSPACE:-/workspace}"
 
 mkdir -p "$workspace"
-chown abc:abc "$workspace"
+# chown abc:abc "$workspace"
+chown -R "${PUID}:${PGID}" "$workspace"

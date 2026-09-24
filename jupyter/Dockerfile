@@ -16,3 +16,6 @@ RUN chmod +x /etc/cont-init.d/10-workspace /etc/services.d/jupyter/run
 WORKDIR ${JUPYTER_WORKSPACE}
 
 EXPOSE 8888
+
+# docker build -t registry.cn-hangzhou.aliyuncs.com/wybioinfo/gobrave-jupyter .
+# docker run --rm -p 8888:8888  -e PUID=$(id -u) -e PGID=$(id -g)  registry.cn-hangzhou.aliyuncs.com/wybioinfo/gobrave-jupyter
