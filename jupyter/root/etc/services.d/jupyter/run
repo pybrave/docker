@@ -1,0 +1,16 @@
+#!/usr/bin/with-contenv bash
+
+export HOME=/config
+workspace="${JUPYTER_WORKSPACE:-/workspace}"
+base_url="${JUPYTER_BASE_URL:-/}"
+
+cd "$workspace"
+exec s6-setuidgid abc jupyter lab \
+    --ip=0.0.0.0 \
+    --port=8888 \
+    --no-browser \
+    --NotebookApp.base_url="$base_url" \
+    --ServerApp.base_url="$base_url" \
+    --ServerApp.token='' \
+    --ServerApp.password='' \
+    --ServerApp.root_dir="$workspace"

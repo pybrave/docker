@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bash
+
+workspace="${JUPYTER_WORKSPACE:-/workspace}"
+
+mkdir -p "$workspace"
+chown abc:abc "$workspace"

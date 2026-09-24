@@ -1,0 +1,18 @@
+FROM lscr.io/linuxserver/baseimage-ubuntu:jammy
+
+ENV PUID=1000
+ENV PGID=1000
+ENV JUPYTER_WORKSPACE=/workspace
+ENV JUPYTER_BASE_URL=/
+
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip python3-venv && \
+    pip3 install --no-cache-dir jupyterlab && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY root/ /
+RUN chmod +x /etc/cont-init.d/10-workspace /etc/services.d/jupyter/run
+
+WORKDIR ${JUPYTER_WORKSPACE}
+
+EXPOSE 8888
