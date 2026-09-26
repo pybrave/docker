@@ -7,8 +7,8 @@ Runs the [deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) Web
 
 ```sh
 docker build -t dsh .
-# pin a release instead of the `latest` npm dist-tag:
-docker build --build-arg DSH_VERSION=0.1.5-rc.3 -t dsh .
+# pin another release of the biox-dev prebuilt bundle:
+docker build --build-arg DSH_VERSION=0.1.10 -t dsh .
 ```
 
 ## Run
@@ -19,6 +19,19 @@ docker run --rm -it \
   -e PUID=$(id -u) -e PGID=$(id -g) \
   -e DEEPSEEK_API_KEY=sk-your-key-here \
   -v dsh-config:/config \
+  dsh
+```
+
+`HOME` defaults to `/config` (the persistent volume) and `dsh` starts there. To use a different
+directory as home — for example a bind-mounted project — set `DSH_WORKSPACE` and mount it:
+
+```sh
+docker run --rm -it \
+  -p 3080:3080 \
+  -e PUID=$(id -u) -e PGID=$(id -g) \
+  -e DEEPSEEK_API_KEY=sk-your-key-here \
+  -v dsh-config:/config \
+  -e DSH_WORKSPACE=/workspace \
   -v "$PWD":/workspace \
   dsh
 ```
@@ -33,9 +46,9 @@ docker logs <container> | grep 'dsh web:'
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `PUID` / `PGID` | `1000` | Ownership of `/config` and `/workspace`. |
+| `PUID` / `PGID` | `1000` | Ownership of `/config` (and of `DSH_WORKSPACE`, when relocated). |
 | `DSH_HOME` | `/config/.dsh` | Harness home: profiles, sessions, credentials, skills. Lives under the `/config` volume so it survives a rebuild. |
-| `DSH_WORKSPACE` | `/workspace` | Directory the agent and the Web UI operate in. |
+| `DSH_WORKSPACE` | `/config` | Relocates the user's `HOME`, and therefore the directory the agent and the Web UI start in. Unset falls back to `/config`. |
 | `DSH_PORT` | `3080` | Port bound inside the container. |
 | `DSH_TRUSTED_HOSTS` | empty | Space-separated extra authorities accepted by the `/api` trust fence, for a deployment reached through a name that is neither `localhost` nor a LAN IP, e.g. `dsh.example.com dsh.internal:3080`. |
 | `DEEPSEEK_API_KEY` | — | Model credential. `DEEPSEEK_BASE_URL` overrides the API endpoint. |
@@ -45,9 +58,11 @@ docker logs <container> | grep 'dsh web:'
 - **Node 22 + pnpm 11.** deepseek-harness pins Node.js `^22.19 || >=24` and pnpm 11; Ubuntu jammy
   ships neither, so Node comes from NodeSource and pnpm is installed globally — `dsh plugin` and
   the Web plugin manager shell out to `pnpm`.
-- **Installed from npm, not built from source.** `npm i -g @deepseek-ai/dsh` is the documented
-  end-user path and ships the frontend dist. Building the monorepo instead would need
-  `pnpm install && pnpm run build` across a large pnpm workspace.
+- **Installed from the prebuilt release bundle, not npm.** The CLI is unpacked from the
+  `biox-dev/deepseek-harness` release archive (`dsh-v<version>.zip`) into `/opt/dsh`, with
+  `/usr/local/bin/dsh` symlinked to it. That archive is self-contained — it ships a `dsh` launcher
+  plus a vendored `node_modules`, including the frontend dist — so it needs no `npm install` and no
+  compilation from source. `DSH_VERSION` selects the release tag.
 - **The bind address comes from a patch, not a flag.** The shipped `dsh web` command deliberately
   binds `127.0.0.1` and *rejects* `--host 0.0.0.0` so a local launch cannot expose remote code
   execution by accident. A container must be reachable through its published port, so
@@ -55,6 +70,9 @@ docker logs <container> | grep 'dsh web:'
   with `--patch`. Since a patch replaces the addressed row's *whole* config, the shipped gzip
   policy (level 1, 1024-byte threshold) is restated there.
 - **`--no-open` is always passed**, because the default-browser handoff cannot work in a container.
+- **`HOME` is configurable.** The service sets `HOME="${DSH_WORKSPACE:-/config}"` and starts `dsh`
+  in `HOME`, so the default home stays on the persistent `/config` volume while `DSH_WORKSPACE`
+  relocates it to another directory (such as a bind-mounted project).
 - **Binding all interfaces is a real exposure.** The Host carries no TLS of its own; the `/api`
   trust fence plus browser-session authentication are the only controls. Terminate TLS in a
   reverse proxy and list its hostname in `DSH_TRUSTED_HOSTS`.
